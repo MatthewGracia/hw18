@@ -1,66 +1,79 @@
 const addDateSuffix = (date) => {
+  // Convert date to string
   let dateStr = date.toString();
 
-  // get last char of date string
+  // Get the last character of the date string
   const lastChar = dateStr.charAt(dateStr.length - 1);
 
-  if (lastChar === '1' && dateStr !== '11') {
-    dateStr = `${dateStr}st`;
-  } else if (lastChar === '2' && dateStr !== '12') {
-    dateStr = `${dateStr}nd`;
-  } else if (lastChar === '3' && dateStr !== '13') {
-    dateStr = `${dateStr}rd`;
-  } else {
-    dateStr = `${dateStr}th`;
+  // Add the appropriate suffix for the date
+  switch (lastChar) {
+    case '1':
+      if (dateStr !== '11') {
+        dateStr += 'st';
+      }
+      break;
+    case '2':
+      if (dateStr !== '12') {
+        dateStr += 'nd';
+      }
+      break;
+    case '3':
+      if (dateStr !== '13') {
+        dateStr += 'rd';
+      }
+      break;
+    default:
+      dateStr += 'th';
+      break;
   }
 
   return dateStr;
 };
 
-// function to format a timestamp, accepts the timestamp and an `options` object as parameters
-module.exports = (
-  timestamp,
-  { monthLength = 'short', dateSuffix = true } = {}
-) => {
-  // create month object
-  const months = {
-    0: monthLength === 'short' ? 'Jan' : 'January',
-    1: monthLength === 'short' ? 'Feb' : 'February',
-    2: monthLength === 'short' ? 'Mar' : 'March',
-    3: monthLength === 'short' ? 'Apr' : 'April',
-    4: monthLength === 'short' ? 'May' : 'May',
-    5: monthLength === 'short' ? 'Jun' : 'June',
-    6: monthLength === 'short' ? 'Jul' : 'July',
-    7: monthLength === 'short' ? 'Aug' : 'August',
-    8: monthLength === 'short' ? 'Sep' : 'September',
-    9: monthLength === 'short' ? 'Oct' : 'October',
-    10: monthLength === 'short' ? 'Nov' : 'November',
-    11: monthLength === 'short' ? 'Dec' : 'December',
-  };
+// Function to format a timestamp
+// Accepts the timestamp and an `options` object as parameters
+module.exports = (timestamp, { monthLength = 'short', dateSuffix = true } = {}) => {
+  // Create a month object with short and long month names
+  const months = [
+    monthLength === 'short' ? 'Jan' : 'January',
+    monthLength === 'short' ? 'Feb' : 'February',
+    monthLength === 'short' ? 'Mar' : 'March',
+    monthLength === 'short' ? 'Apr' : 'April',
+    monthLength === 'short' ? 'May' : 'May',
+    monthLength === 'short' ? 'Jun' : 'June',
+    monthLength === 'short' ? 'Jul' : 'July',
+    monthLength === 'short' ? 'Aug' : 'August',
+    monthLength === 'short' ? 'Sep' : 'September',
+    monthLength === 'short' ? 'Oct' : 'October',
+    monthLength === 'short' ? 'Nov' : 'November',
+    monthLength === 'short' ? 'Dec' : 'December',
+  ];
 
+  // Create a new Date object from the timestamp
   const dateObj = new Date(timestamp);
+
+  // Format the month
   const formattedMonth = months[dateObj.getMonth()];
 
+  // Format the day of the month
   const dayOfMonth = dateSuffix
     ? addDateSuffix(dateObj.getDate())
     : dateObj.getDate();
 
+  // Format the year
   const year = dateObj.getFullYear();
-  let hour =
-    dateObj.getHours() > 12
-      ? Math.floor(dateObj.getHours() - 12)
-      : dateObj.getHours();
 
-  // if hour is 0 (12:00am), change it to 12
-  if (hour === 0) {
-    hour = 12;
-  }
+  // Format the hour
+  let hour = dateObj.getHours() > 12 ? dateObj.getHours() - 12 : dateObj.getHours();
+  hour = hour === 0 ? 12 : hour;
 
+  // Format the minutes
   const minutes = (dateObj.getMinutes() < 10 ? '0' : '') + dateObj.getMinutes();
 
-  // set `am` or `pm`
+  // Set the period of the day (AM or PM)
   const periodOfDay = dateObj.getHours() >= 12 ? 'pm' : 'am';
 
+  // Create the formatted timestamp string
   const formattedTimeStamp = `${formattedMonth} ${dayOfMonth}, ${year} at ${hour}:${minutes} ${periodOfDay}`;
 
   return formattedTimeStamp;

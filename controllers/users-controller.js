@@ -1,16 +1,13 @@
-const { User, Thought } = require('../models');
+const User = require('../models/User');
 
 const userController = {
   // get all users
   async getUsers(req, res) {
     try {
-      const dbUserData = await User.find()
-        .select('-__v')
-
+      const dbUserData = await User.find().select('-__v');
       res.json(dbUserData);
     } catch (err) {
-      console.log(err);
-      res.status(500).json(err);
+      handleError(res, err);
     }
   },
   // get single user by id
@@ -22,13 +19,12 @@ const userController = {
         .populate('thoughts');
 
       if (!dbUserData) {
-        return res.status(404).json({ message: 'No user with this id!' });
+        return res.status(404).json({ message: 'No user for this specific id' });
       }
 
       res.json(dbUserData);
     } catch (err) {
-      console.log(err);
-      res.status(500).json(err);
+      handleError(res, err);
     }
   },
   // create a new user
@@ -37,8 +33,7 @@ const userController = {
       const dbUserData = await User.create(req.body);
       res.json(dbUserData);
     } catch (err) {
-      console.log(err);
-      res.status(500).json(err);
+      handleError(res, err);
     }
   },
   // update a user
@@ -56,63 +51,72 @@ const userController = {
       );
 
       if (!dbUserData) {
-        return res.status(404).json({ message: 'No user with this id!' });
+        return res.status(404).json({ message: 'No user for this specific id' });
       }
 
       res.json(dbUserData);
     } catch (err) {
-      console.log(err);
-      res.status(500).json(err);
+      handleError(res, err);
     }
   },
   // delete user (BONUS: and delete associated thoughts)
   async deleteUser(req, res) {
     try {
-      const dbUserData = await User.findOneAndDelete({ _id: req.params.userId })
+      const dbUserData = await User.findOneAndDelete({ _id: req.params.userId });
 
       if (!dbUserData) {
-        return res.status(404).json({ message: 'No user with this id!' });
+        return res.status(404).json({ message: 'No user for this specific id' });
       }
 
       // BONUS: get ids of user's `thoughts` and delete them all
       await Thought.deleteMany({ _id: { $in: dbUserData.thoughts } });
       res.json({ message: 'User and associated thoughts deleted!' });
     } catch (err) {
-      console.log(err);
-      res.status(500).json(err);
+      handleError(res, err);
     }
   },
-
   // add friend to friend list
   async addFriend(req, res) {
     try {
-      const dbUserData = await User.findOneAndUpdate({ _id: req.params.userId }, { $addToSet: { friends: req.params.friendId } }, { new: true });
+      const dbUserData = await User.findOneAndUpdate(
+        { _id: req.params.userId },
+        { $addToSet: { friends: req.params.friendId } },
+        { new: true }
+      );
 
       if (!dbUserData) {
-        return res.status(404).json({ message: 'No user with this id!' });
+        return res.status(404).json({ message: 'No user for this specific id' });
       }
 
       res.json(dbUserData);
     } catch (err) {
-      console.log(err);
-      res.status(500).json(err);
+      handleError(res, err);
     }
   },
   // remove friend from friend list
   async removeFriend(req, res) {
     try {
-      const dbUserData = await User.findOneAndUpdate({ _id: req.params.userId }, { $pull: { friends: req.params.friendId } }, { new: true });
+      const dbUserData = await User.findOneAndUpdate(
+        { _id: req.params.userId },
+        { $pull: { friends: req.params.friendId } },
+        { new: true }
+      );
 
       if (!dbUserData) {
-        return res.status(404).json({ message: 'No user with this id!' });
+        return res.status(404).json({ message: 'No user for this specific id' });
       }
 
       res.json(dbUserData);
     } catch (err) {
-      console.log(err);
-      res.status(500).json(err);
+      handleError(res, err);
     }
   },
 };
+
+// Helper function to handle errors
+function handleError(res, err) {
+  console.log(err);
+  res.status(500).json(err);
+}
 
 module.exports = userController;
